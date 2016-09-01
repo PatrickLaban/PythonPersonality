@@ -16,15 +16,26 @@ int Cset_personality(unsigned long persona) {
 }
 
 static PyObject* set_personality(PyObject* self, PyObject *args) {
-	unsigned long persona = READ_IMPLIES_EXEC;
+	unsigned long persona; // = READ_IMPLIES_EXEC;
+	const char * personality;
 	
-	//Py_Args_ParseTuple(args, "i", &persona);
+	if (!PyArg_ParseTuple(args, "s", &personality))
+		return NULL;
+	
+	if (strcmp(personality, "READ_IMPLIES_EXEC") == 0) {
+		persona = READ_IMPLIES_EXEC;
+	} else if (strcmp(personality, "ADDR_LIMIT_32BIT") == 0) {
+		persona = ADDR_LIMIT_32BIT;
+	} else {
+		return Py_BuildValue("i", -1); 
+	}
+	
 	return Py_BuildValue("i", Cset_personality(persona));
 }
 
 static PyMethodDef personality_methods[] = {
 	{"get_personality", (PyCFunction)get_personality, METH_NOARGS, "Returns the personality value"},
-	{"set_personality", (PyCFunction)set_personality, METH_NOARGS, "Sets the personality value"},
+	{"set_personality", (PyCFunction)set_personality, METH_VARARGS, "Sets the personality value"},
 	/*	{"version", (PyCFunction)version, METH_NOARGS, "Returns the version number"}, */
 	{NULL, NULL, 0, NULL}
 };
