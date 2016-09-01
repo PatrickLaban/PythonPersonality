@@ -1,22 +1,25 @@
 #include <Python.h>
 #include <sys/personality.h>
+#include <stdint.h>
 
 int Cget_personality(void) {
-	unsigned long int persona = 0xffffffff;
+	unsigned long persona = 0xffffffffUL;
 	return personality(persona);
 }
 
 static PyObject* get_personality(PyObject* self) {
-	return Py_BuildValue("i", Cget_personality);
+	return Py_BuildValue("i", Cget_personality());
 }
 
-int Cset_personality(void) {
-	unsigned long int persona = READ_IMPLIES_EXEC;
+int Cset_personality(unsigned long persona) {
 	return personality(persona);
 }
 
-static PyObject* set_personality(PyObject* self) {
-	return Py_BuildValue("i", Cset_personality);
+static PyObject* set_personality(PyObject* self, PyObject *args) {
+	unsigned long persona = READ_IMPLIES_EXEC;
+	
+	//Py_Args_ParseTuple(args, "i", &persona);
+	return Py_BuildValue("i", Cset_personality(persona));
 }
 
 static PyMethodDef personality_methods[] = {
