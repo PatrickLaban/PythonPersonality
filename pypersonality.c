@@ -1,7 +1,25 @@
 #include <Python.h>
 #include <sys/personality.h>
-#include <stdint.h>
 #include <stdbool.h>
+
+struct module_state {
+    PyObject *error;
+};
+
+#if PY_MAJOR_VERSION >= 3
+#define GETSTATE(m) ((struct module_state*)PyModule_GetState(m))
+#else
+//#define GETSTATE(m) (&_state);
+//static struct module_state_state;
+#endif
+
+#if PY_MAJOR_VERSION >= 3
+static PyObject * error_out(PyObject *m) {
+    struct module_state *st = GETSTATE(m);
+    PyErr_SetString(st->error, "An error has occured");
+    return NULL;
+}
+#endif
 
 static int Cget_personality(void) {
     unsigned long persona = 0xffffffffUL;
@@ -34,25 +52,74 @@ static PyObject* version(PyObject* self) {
     return Py_BuildValue("s", "Version 1.0");
 }
 
-static PyMethodDef personality_methods[] = {
+static PyMethodDef pypersonality_methods[] = {
     {"get_personality", (PyCFunction)get_personality, METH_NOARGS, "Returns the personality value"},
     {"set_personality", (PyCFunction)set_personality, METH_VARARGS, "Sets the personality value"},
     {"version", (PyCFunction)version, METH_NOARGS, "Returns the version number"},
+#if PY_MAJOR_VERSION >= 3
+    {"error_out", (PyCFunction)error_out, METH_NOARGS, NULL},
+#endif
     {NULL, NULL, 0, NULL}
 };
 
+
+#if PY_MAJOR_VERSION >= 3
+static int pypersonality_traverse(PyObject *m, visitproc visit, void *arg) {
+    Py_VISIT(GETSTATE(m)->error);
+    return 0;
+}
+
+static int pypersonality_clear(PyObject *m) {
+    Py_CLEAR(GETSTATE(m)->error);
+    return 0;
+}
+#if PY_MAJOR_VERSION >= 3
+static struct PyModuleDef pypersonality = {
+    PyModuleDef_HEAD_INIT,
+    "personality",
+    "Module to manipulate process execution domain",
+    sizeof(struct module_state),
+    pypersonality_methods,
+    NULL,
+    pypersonality_traverse,
+    pypersonality_clear,
+    NULL
+};
+#else
 static struct PyModuleDef pypersonality = {
     PyModuleDef_HEAD_INIT,
     "personality",
     "Module to manipulate process execution domain",
     -1,
-    personality_methods
+    pypersonality_methods
 };
+#endif
 
+#define INITERROR return NULL
+PyMODINIT_FUNC PyInit_pypersonality(void)
+#else
+#define INITERROR return
+void initpypersonality(void)
+#endif
+{
+#if PY_MAJOR_VERSION >= 3
+    PyObject *module = PyModule_Create(&pypersonality);
+#else
+    PyObject *module = Py_InitModule("pypersonality", pypersonality_methods);
+#endif
 
-PyMODINIT_FUNC PyInit_pypersonality(void) {
-    PyObject *module;
-    module = PyModule_Create(&pypersonality);
+    if (module == NULL)
+        INITERROR;
+    
+    #if PY_MAJOR_VERSION >= 3
+    struct module_state *st = GETSTATE(module);
+    
+    st->error = PyErr_NewException("pypersonality.Error", NULL, NULL);
+    if (st->error == NULL) {
+        Py_DECREF(module);
+        INITERROR;
+    }
+    #endif
     
     PyModule_AddIntMacro(module, UNAME26);
     PyModule_AddIntMacro(module, ADDR_NO_RANDOMIZE);
@@ -88,8 +155,8 @@ PyMODINIT_FUNC PyInit_pypersonality(void) {
     PyModule_AddIntMacro(module, PER_OSF4);
     PyModule_AddIntMacro(module, PER_HPUX);
     PyModule_AddIntMacro(module, PER_MASK);
-    
+#if PY_MAJOR_VERSION >= 3
     return module;
-
+#endif
 }
 
