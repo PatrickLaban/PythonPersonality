@@ -39,7 +39,7 @@ static PyObject* set_personality(PyObject* self, PyObject *args) {
         return NULL;
 
     Cset_personality(persona);
-    if (Cget_personality() == persona) {
+    if (Cget_personality() == (int)persona) {
         return Py_BuildValue("b", true);
     } else {
         return Py_BuildValue("b", false);
@@ -69,7 +69,7 @@ static int pypersonality_clear(PyObject *m) {
     Py_CLEAR(GETSTATE(m)->error);
     return 0;
 }
-//#if PY_MAJOR_VERSION >= 3
+
 static struct PyModuleDef pypersonality = {
     PyModuleDef_HEAD_INIT,
     "personality",
@@ -81,17 +81,6 @@ static struct PyModuleDef pypersonality = {
     pypersonality_clear,
     NULL
 };
-//#else
-/*
-static struct PyModuleDef pypersonality = {
-    PyModuleDef_HEAD_INIT,
-    "personality",
-    "Module to manipulate process execution domain",
-    -1,
-    pypersonality_methods
-};
-#endif
-*/
 
 #define INITERROR return NULL
 PyMODINIT_FUNC PyInit_pypersonality(void)
