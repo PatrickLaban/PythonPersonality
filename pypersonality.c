@@ -9,17 +9,15 @@ struct module_state {
 #if PY_MAJOR_VERSION >= 3
 #define GETSTATE(m) ((struct module_state*)PyModule_GetState(m))
 #else
-//#define GETSTATE(m) (&_state);
-//static struct module_state_state;
+#define GETSTATE(m) (&_state);
+static struct module_state _state;
 #endif
 
-#if PY_MAJOR_VERSION >= 3
 static PyObject * error_out(PyObject *m) {
     struct module_state *st = GETSTATE(m);
     PyErr_SetString(st->error, "An error has occured");
     return NULL;
 }
-#endif
 
 static int Cget_personality(void) {
     unsigned long persona = 0xffffffffUL;
@@ -56,9 +54,7 @@ static PyMethodDef pypersonality_methods[] = {
     {"get_personality", (PyCFunction)get_personality, METH_NOARGS, "Returns the personality value"},
     {"set_personality", (PyCFunction)set_personality, METH_VARARGS, "Sets the personality value"},
     {"version", (PyCFunction)version, METH_NOARGS, "Returns the version number"},
-#if PY_MAJOR_VERSION >= 3
     {"error_out", (PyCFunction)error_out, METH_NOARGS, NULL},
-#endif
     {NULL, NULL, 0, NULL}
 };
 
@@ -73,7 +69,7 @@ static int pypersonality_clear(PyObject *m) {
     Py_CLEAR(GETSTATE(m)->error);
     return 0;
 }
-#if PY_MAJOR_VERSION >= 3
+//#if PY_MAJOR_VERSION >= 3
 static struct PyModuleDef pypersonality = {
     PyModuleDef_HEAD_INIT,
     "personality",
@@ -85,7 +81,8 @@ static struct PyModuleDef pypersonality = {
     pypersonality_clear,
     NULL
 };
-#else
+//#else
+/*
 static struct PyModuleDef pypersonality = {
     PyModuleDef_HEAD_INIT,
     "personality",
@@ -94,6 +91,7 @@ static struct PyModuleDef pypersonality = {
     pypersonality_methods
 };
 #endif
+*/
 
 #define INITERROR return NULL
 PyMODINIT_FUNC PyInit_pypersonality(void)
