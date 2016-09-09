@@ -119,9 +119,9 @@ void initpypersonality(void)
     }
     #endif
     
-    PyModule_AddIntMacro(module, UNAME26);
+    //PyModule_AddIntMacro(module, UNAME26);
     PyModule_AddIntMacro(module, ADDR_NO_RANDOMIZE);
-    PyModule_AddIntMacro(module, FDPIC_FUNCPTRS);
+    //PyModule_AddIntMacro(module, FDPIC_FUNCPTRS);
     PyModule_AddIntMacro(module, MMAP_PAGE_ZERO);
     PyModule_AddIntMacro(module, ADDR_COMPAT_LAYOUT);
     PyModule_AddIntMacro(module, READ_IMPLIES_EXEC);
@@ -132,7 +132,7 @@ void initpypersonality(void)
     PyModule_AddIntMacro(module, ADDR_LIMIT_3GB);
     PyModule_AddIntMacro(module, PER_LINUX);
     PyModule_AddIntMacro(module, PER_LINUX_32BIT);
-    PyModule_AddIntMacro(module, PER_LINUX_FDPIC);
+    //SPyModule_AddIntMacro(module, PER_LINUX_FDPIC);
     PyModule_AddIntMacro(module, PER_SVR4);
     PyModule_AddIntMacro(module, PER_SVR3);
     PyModule_AddIntMacro(module, PER_SCOSVR3);
